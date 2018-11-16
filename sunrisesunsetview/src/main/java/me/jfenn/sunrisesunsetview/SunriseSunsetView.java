@@ -286,6 +286,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                 else if (moveBeginEnd != null)
                     dayEnd.to(Math.min(1, Math.max(dayStart.getTarget() + 0.04167f, moveBeginEnd + horizontalDistance)));
 
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(true);
+
                 postInvalidate();
                 break;
             case MotionEvent.ACTION_UP:
@@ -296,6 +299,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                     else if (moveBeginEnd != null)
                         listener.onSunsetChanged(this, getSunset());
                 }
+
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(false);
 
                 moveBeginStart = null;
                 moveBeginEnd = null;
