@@ -25,8 +25,8 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
     private AnimatedFloat dayStart;
     private AnimatedFloat dayEnd;
 
-    private boolean movingStart;
-    private boolean movingEnd;
+    private Float moveBeginStart;
+    private Float moveBeginEnd;
 
     private SunriseListener listener;
 
@@ -61,8 +61,8 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         setClickable(true);
         setFocusable(true);
 
-        dayStart = new AnimatedFloat(0.333f);
-        dayEnd = new AnimatedFloat(0.666f);
+        dayStart = new AnimatedFloat(0.25f);
+        dayEnd = new AnimatedFloat(0.75f);
     }
 
     public void setDayStart(long dayStartMillis) {
@@ -97,9 +97,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         dayStart.next(true);
         dayEnd.next(true);
 
-        float scaleX = canvas.getWidth() / 23f;
-        float scaleY = canvas.getHeight() / 2f;
-        float interval = dayStart.val() / 2;
+        float scaleX = getWidth() / 23f;
+        float scaleY = getHeight() / 2f;
+        float interval = (dayEnd.val() - dayStart.val()) / 2;
         float interval2 = (1 - dayEnd.val() + dayStart.val()) / 2;
         float start = dayStart.val() - (1 - dayEnd.val() + dayStart.val());
         interval *= 24 * scaleX;
@@ -119,6 +119,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         canvas.drawRect(0, 0, (int) scaleX * hour, (int) scaleY, paint);
         canvas.drawRect(0, (int) scaleY, (int) scaleX * hour, canvas.getHeight(), sunsetPaint);
         canvas.drawRect((int) scaleX * hour, 0, canvas.getWidth(), canvas.getHeight(), linePaint);
+
+        if (!dayStart.isTarget() || !dayEnd.isTarget())
+            postInvalidate();
     }
 
     @Override
@@ -126,42 +129,42 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         float horizontalDistance = event.getX() / getWidth();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (!dayStart.isTarget() || !dayEnd.isTarget()) {
-                    movingStart = false;
-                    movingEnd = false;
+                moveBeginStart = null;
+                moveBeginEnd = null;
+                if (!dayStart.isTarget() || !dayEnd.isTarget())
                     break;
-                }
 
-                if (Math.abs(horizontalDistance - dayStart.val()) < Math.abs(horizontalDistance - dayEnd.val())) {
-                    movingStart = true;
-                    movingEnd = false;
-                } else {
-                    movingStart = false;
-                    movingEnd = true;
-                }
+                if (Math.abs(horizontalDistance - dayStart.val()) < Math.abs(horizontalDistance - dayEnd.val()))
+                    moveBeginStart = dayStart.val() - horizontalDistance;
+                else moveBeginEnd = dayEnd.val() - horizontalDistance;
+
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (movingStart && horizontalDistance < dayEnd.getTarget()) {
-                    dayEnd.to(horizontalDistance);
-                } else if (movingEnd && horizontalDistance > dayStart.getTarget()) {
-                    dayStart.to(horizontalDistance);
+                if (moveBeginStart != null && horizontalDistance < dayEnd.getTarget()) {
+                    dayStart.to(Math.min(1, Math.max(0, moveBeginStart + horizontalDistance)));
+                } else if (moveBeginEnd != null && horizontalDistance > dayStart.getTarget()) {
+                    dayEnd.to(Math.min(1, Math.max(0, moveBeginEnd + horizontalDistance)));
                 }
 
                 postInvalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                movingStart = false;
-                movingEnd = false;
+                if (listener != null) {
+                    if (moveBeginStart != null)
+                        listener.onSunriseChanged((long) (dayStart.getTarget() * DAY_LENGTH));
+                    else if (moveBeginEnd != null)
+                        listener.onSunsetChanged((long) (dayEnd.getTarget() * DAY_LENGTH));
+                }
 
-                if (listener != null)
-                    listener.onSunriseChanged((long) (dayStart.getTarget() * DAY_LENGTH), (long) (dayEnd.getTarget() * DAY_LENGTH));
-
+                moveBeginStart = null;
+                moveBeginEnd = null;
                 break;
         }
         return false;
     }
 
     public interface SunriseListener {
-        void onSunriseChanged(long sunriseMillis, long sunsetMillis);
+        void onSunriseChanged(long sunriseMillis);
+        void onSunsetChanged(long sunsetMillis);
     }
 }
