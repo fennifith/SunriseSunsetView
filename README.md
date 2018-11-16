@@ -62,4 +62,4 @@ The sunrise and sunset times are passed as milliseconds ranging from 0 to "24 ho
 
 You can set these values by calling `.setDayStart(millis)` and `.setDayEnd(millis)`.
 
-As I am too lazy to write any more documentation, you can see my automated documentation for the view [here](https://jfenn.me/projects/sunrisesunsetview/docs/me/jfenn/sunrisesunsetview/SunriseSunsetView).
+As I am too lazy to write any more documentation, you can see my automated documentation for the view [here](https://jfenn.me/projects/sunrisesunsetview/docs/sunrisesunsetview/src/main/java/me/jfenn/sunrisesunsetview/SunriseSunsetView).
