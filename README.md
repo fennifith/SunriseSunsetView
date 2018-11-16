@@ -1,6 +1,6 @@
 SunriseSunsetView is a lightweight Android view used for displaying and/or editing sunrise and sunset times. This is a part of my efforts to modularize some of the things that I write; it was originally a part of [Alarmio](https://jfenn.me/projects/alarmio), and has been separated into its own library.
 
-[![](https://jitpack.io/v/me.jfenn/SunriseSunsetView.svg?branch=master)](https://jitpack.io/#me.jfenn/SunriseSunsetView)
+[![](https://jitpack.io/v/me.jfenn/SunriseSunsetView.svg)](https://jitpack.io/#me.jfenn/SunriseSunsetView)
 
 For testing and experimentation purposes, a sample apk can be downloaded [here](https://jfenn.me/projects/sunrisesunsetview).
 
