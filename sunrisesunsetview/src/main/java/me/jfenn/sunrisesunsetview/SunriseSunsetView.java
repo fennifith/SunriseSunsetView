@@ -1,6 +1,5 @@
 package me.jfenn.sunrisesunsetview;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,27 +8,25 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 
 import java.util.Calendar;
 
 import androidx.annotation.Nullable;
+import me.jfenn.androidutils.anim.AnimatedFloat;
 
 public class SunriseSunsetView extends View implements View.OnTouchListener {
+
+    private static final long DAY_LENGTH = 86400000L;
 
     private Paint paint;
     private Paint sunsetPaint;
     private Paint linePaint;
 
-    private float dayStart;
-    private float dayEnd;
-    private float displayDayStart;
-    private float displayDayEnd;
+    private AnimatedFloat dayStart;
+    private AnimatedFloat dayEnd;
 
     private boolean movingStart;
     private boolean movingEnd;
-    private ValueAnimator animator1;
-    private ValueAnimator animator2;
 
     private SunriseListener listener;
 
@@ -63,6 +60,31 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         setOnTouchListener(this);
         setClickable(true);
         setFocusable(true);
+
+        dayStart = new AnimatedFloat(0.333f);
+        dayEnd = new AnimatedFloat(0.666f);
+    }
+
+    public void setDayStart(long dayStartMillis) {
+        setDayStart(dayStartMillis, false);
+    }
+
+    public void setDayStart(long dayStartMillis, boolean animate) {
+        dayStartMillis %= DAY_LENGTH;
+        if (animate)
+            dayStart.to((float) dayStartMillis / DAY_LENGTH);
+        else dayStart.setCurrent((float) dayStartMillis / DAY_LENGTH);
+    }
+
+    public void setDayEnd(long dayEndMillis) {
+        setDayEnd(dayEndMillis, false);
+    }
+
+    public void setDayEnd(long dayEndMillis, boolean animate) {
+        dayEndMillis %= DAY_LENGTH;
+        if (animate)
+            dayEnd.to((float) dayEndMillis / DAY_LENGTH);
+        else dayEnd.setCurrent((float) dayEndMillis / DAY_LENGTH);
     }
 
     public void setListener(SunriseListener listener) {
@@ -72,49 +94,17 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        //float dayStart = (float) alarmio.getDayStart();
-        //float dayEnd = (float) alarmio.getDayEnd();
-        if (dayStart != this.dayStart) {
-            if (animator1 != null && animator1.isStarted())
-                animator1.end();
-
-            animator1 = ValueAnimator.ofFloat(this.dayStart, dayStart);
-            animator1.setInterpolator(new DecelerateInterpolator());
-            animator1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    displayDayStart = (float) valueAnimator.getAnimatedValue();
-                    invalidate();
-                }
-            });
-            animator1.start();
-            this.dayStart = dayStart;
-        }
-        if (dayEnd != this.dayEnd) {
-            if (animator2 != null && animator2.isStarted())
-                animator2.end();
-
-            animator2 = ValueAnimator.ofFloat(this.dayEnd, dayEnd);
-            animator2.setInterpolator(new DecelerateInterpolator());
-            animator2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    displayDayEnd = (float) valueAnimator.getAnimatedValue();
-                    invalidate();
-                }
-            });
-            animator2.start();
-            this.dayEnd = dayEnd;
-        }
+        dayStart.next(true);
+        dayEnd.next(true);
 
         float scaleX = canvas.getWidth() / 23f;
         float scaleY = canvas.getHeight() / 2f;
-        float interval = (displayDayEnd - displayDayStart) / 2;
-        float interval2 = (24 - displayDayEnd + displayDayStart) / 2;
-        float start = displayDayStart - (24 - displayDayEnd + displayDayStart);
-        interval *= scaleX;
-        interval2 *= scaleX;
-        start *= scaleX;
+        float interval = dayStart.val() / 2;
+        float interval2 = (1 - dayEnd.val() + dayStart.val()) / 2;
+        float start = dayStart.val() - (1 - dayEnd.val() + dayStart.val());
+        interval *= 24 * scaleX;
+        interval2 *= 24 * scaleX;
+        start *= 24 * scaleX;
 
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
@@ -136,7 +126,13 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         float horizontalDistance = event.getX() / getWidth();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (Math.abs(horizontalDistance - (dayStart / 24f)) < Math.abs(horizontalDistance - (dayEnd / 24f))) {
+                if (!dayStart.isTarget() || !dayEnd.isTarget()) {
+                    movingStart = false;
+                    movingEnd = false;
+                    break;
+                }
+
+                if (Math.abs(horizontalDistance - dayStart.val()) < Math.abs(horizontalDistance - dayEnd.val())) {
                     movingStart = true;
                     movingEnd = false;
                 } else {
@@ -144,26 +140,28 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                     movingEnd = true;
                 }
                 break;
-            case MotionEvent.ACTION_UP:
-                if (movingStart) {
-                    movingStart = false;
-                    float dayStart = Math.min((float) Math.round(horizontalDistance * 24), dayEnd - 1);
-                    invalidate();
-                    if (listener != null)
-                        listener.onSunriseChanged(Math.round(dayStart), Math.round(dayEnd));
-                } else if (movingEnd) {
-                    movingEnd = false;
-                    float dayEnd = Math.max((float) Math.round(horizontalDistance * 24), dayStart + 1);
-                    invalidate();
-                    if (listener != null)
-                        listener.onSunriseChanged(Math.round(dayStart), Math.round(dayEnd));
+            case MotionEvent.ACTION_MOVE:
+                if (movingStart && horizontalDistance < dayEnd.getTarget()) {
+                    dayEnd.to(horizontalDistance);
+                } else if (movingEnd && horizontalDistance > dayStart.getTarget()) {
+                    dayStart.to(horizontalDistance);
                 }
+
+                postInvalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+                movingStart = false;
+                movingEnd = false;
+
+                if (listener != null)
+                    listener.onSunriseChanged((long) (dayStart.getTarget() * DAY_LENGTH), (long) (dayEnd.getTarget() * DAY_LENGTH));
+
                 break;
         }
         return false;
     }
 
     public interface SunriseListener {
-        void onSunriseChanged(int sunrise, int sunset);
+        void onSunriseChanged(long sunriseMillis, long sunsetMillis);
     }
 }
