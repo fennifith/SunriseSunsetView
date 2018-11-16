@@ -4,6 +4,10 @@ SunriseSunsetView is a lightweight Android view used for displaying and/or editi
 
 For testing and experimentation purposes, a sample apk can be downloaded [here](https://jfenn.me/projects/sunrisesunsetview).
 
+|A Screenshot|
+|-----|
+|![img](./.github/images/screenshot.png?raw=true)|
+
 ## Usage
 
 ### Setup
