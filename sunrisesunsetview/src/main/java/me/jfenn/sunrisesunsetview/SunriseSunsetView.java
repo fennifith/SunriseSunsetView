@@ -31,15 +31,23 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
     private SunriseListener listener;
 
     public SunriseSunsetView(Context context) {
-        this(context, null, 0);
+        super(context);
+        init();
     }
 
     public SunriseSunsetView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init();
     }
 
     public SunriseSunsetView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init() {
+        dayStart = new AnimatedFloat(0.25f);
+        dayEnd = new AnimatedFloat(0.75f);
 
         paint = new Paint();
         paint.setAntiAlias(true);
@@ -60,9 +68,6 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         setOnTouchListener(this);
         setClickable(true);
         setFocusable(true);
-
-        dayStart = new AnimatedFloat(0.25f);
-        dayEnd = new AnimatedFloat(0.75f);
     }
 
     public void setDayStart(long dayStartMillis) {
