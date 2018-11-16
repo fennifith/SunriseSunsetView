@@ -22,13 +22,13 @@ public class MainActivity extends AppCompatActivity implements SunriseSunsetView
     }
 
     @Override
-    public void onSunriseChanged(long sunriseMillis) {
+    public void onSunriseChanged(SunriseSunsetView view, long sunriseMillis) {
         Toast.makeText(this, "Sunrise set to " + new SimpleDateFormat("HH:mm", Locale.getDefault())
                 .format(new Date(sunriseMillis)), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onSunsetChanged(long sunsetMillis) {
+    public void onSunsetChanged(SunriseSunsetView view, long sunsetMillis) {
         Toast.makeText(this, "Sunset set to " + new SimpleDateFormat("HH:mm", Locale.getDefault())
                 .format(new Date(sunsetMillis)), Toast.LENGTH_SHORT).show();
     }

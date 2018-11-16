@@ -98,6 +98,16 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
     }
 
     /**
+     * Calculate the sunrise time, in milliseconds. Returned values
+     * will not range beyond a 24 hour period.
+     *
+     * @return The sunrise time, in milliseconds.
+     */
+    public long getDayStart() {
+        return (long) (dayStart.getTarget() * DAY_LENGTH);
+    }
+
+    /**
      * Set the sunset time, in milliseconds. Values can range
      * beyond the period of a day; they are modulated by a 24 hour
      * period. Change in values will not be animated.
@@ -122,6 +132,16 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         if (animate)
             dayEnd.to((float) dayEndMillis / DAY_LENGTH);
         else dayEnd.setCurrent((float) dayEndMillis / DAY_LENGTH);
+    }
+
+    /**
+     * Calculate the sunset time, in milliseconds. Returned values
+     * will not range beyond a 24 hour period.
+     *
+     * @return The sunset time, in milliseconds.
+     */
+    public long getDayEnd() {
+        return (long) (dayEnd.getTarget() * DAY_LENGTH);
     }
 
     /**
@@ -198,9 +218,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
             case MotionEvent.ACTION_UP:
                 if (listener != null) {
                     if (moveBeginStart != null)
-                        listener.onSunriseChanged((long) (dayStart.getTarget() * DAY_LENGTH));
+                        listener.onSunriseChanged(this, getDayStart());
                     else if (moveBeginEnd != null)
-                        listener.onSunsetChanged((long) (dayEnd.getTarget() * DAY_LENGTH));
+                        listener.onSunsetChanged(this, getDayEnd());
                 }
 
                 moveBeginStart = null;
@@ -211,7 +231,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
     }
 
     public interface SunriseListener {
-        void onSunriseChanged(long sunriseMillis);
-        void onSunsetChanged(long sunsetMillis);
+        void onSunriseChanged(SunriseSunsetView view, long sunriseMillis);
+        void onSunsetChanged(SunriseSunsetView view, long sunsetMillis);
     }
 }
