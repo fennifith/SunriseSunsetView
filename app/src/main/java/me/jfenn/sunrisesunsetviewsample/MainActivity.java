@@ -3,11 +3,11 @@ package me.jfenn.sunrisesunsetviewsample;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import me.jfenn.sunrisesunsetview.SunriseSunsetView;
 
 public class MainActivity extends AppCompatActivity implements SunriseSunsetView.SunriseListener {
@@ -18,18 +18,22 @@ public class MainActivity extends AppCompatActivity implements SunriseSunsetView
         setContentView(R.layout.activity_main);
 
         SunriseSunsetView view = findViewById(R.id.sunView);
+        view.setSunriseColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        view.setSunsetColor(0xFF424242);
         view.setListener(this);
     }
 
     @Override
     public void onSunriseChanged(SunriseSunsetView view, long sunriseMillis) {
-        Toast.makeText(this, "Sunrise set to " + new SimpleDateFormat("HH:mm", Locale.getDefault())
-                .format(new Date(sunriseMillis)), Toast.LENGTH_SHORT).show();
+        long hours = TimeUnit.MILLISECONDS.toHours(sunriseMillis);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(sunriseMillis) % 60;
+        Toast.makeText(this, String.format(Locale.getDefault(), "Sunrise set to %02d:%02d", hours, minutes), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onSunsetChanged(SunriseSunsetView view, long sunsetMillis) {
-        Toast.makeText(this, "Sunset set to " + new SimpleDateFormat("HH:mm", Locale.getDefault())
-                .format(new Date(sunsetMillis)), Toast.LENGTH_SHORT).show();
+        long hours = TimeUnit.MILLISECONDS.toHours(sunsetMillis);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(sunsetMillis) % 60;
+        Toast.makeText(this, String.format(Locale.getDefault(), "Sunrise set to %02d:%02d", hours, minutes), Toast.LENGTH_SHORT).show();
     }
 }

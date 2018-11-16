@@ -11,6 +11,7 @@ import android.view.View;
 
 import java.util.Calendar;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import me.jfenn.androidutils.anim.AnimatedFloat;
 
@@ -68,6 +69,74 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         setOnTouchListener(this);
         setClickable(true);
         setFocusable(true);
+    }
+
+    /**
+     * Sets the color for the segment of the day where the
+     * sun is above the horizon.
+     *
+     * @param color                 The sunrise color.
+     */
+    public void setSunriseColor(@ColorInt int color) {
+        sunrisePaint.setColor(color);
+    }
+
+    /**
+     * @return The color of the segment of the day where the
+     *         sun is above the horizon.
+     */
+    @ColorInt
+    public int getSunriseColor() {
+        return sunrisePaint.getColor();
+    }
+
+    /**
+     * Sets the color for the segment of the day where the
+     * sun is below the horizon.
+     *
+     * @param color                 The sunset color.
+     */
+    public void setSunsetColor(@ColorInt int color) {
+        sunsetPaint.setColor(color);
+    }
+
+    /**
+     * @return The color of the segment of the day where the
+     *         sun is below the horizon.
+     */
+    @ColorInt
+    public int getSunsetColor() {
+        return sunsetPaint.getColor();
+    }
+
+    /**
+     * Sets the color for the segment of the day that has
+     * not passed yet; some may refer to it as the future,
+     * but what truly is the future but a moment in time
+     * which has yet to occur? Since nobody truly knows the
+     * exact outcome of a future event, the future cannot
+     * possibly exist until it actually happens. With that
+     * said, we refer to an event which we believe might
+     * happen as the future, but there is no fail-safe method
+     * of proving that said event will actually occur, short
+     * of it occurring. Can one really say it is possible to
+     * determine what is essentially an abstraction of a
+     * future event with no uncertainty that it might not
+     * occur?
+     *
+     * @param color                 The future color.
+     */
+    public void setFutureColor(@ColorInt int color) {
+        linePaint.setColor(color);
+    }
+
+    /**
+     * @return The color of the segment of the day which
+     *         has yet to occur.
+     */
+    @ColorInt
+    public int getFutureColor() {
+        return linePaint.getColor();
     }
 
     /**
@@ -207,11 +276,10 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
 
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (moveBeginStart != null && horizontalDistance < dayEnd.getTarget()) {
-                    dayStart.to(Math.min(1, Math.max(0, moveBeginStart + horizontalDistance)));
-                } else if (moveBeginEnd != null && horizontalDistance > dayStart.getTarget()) {
-                    dayEnd.to(Math.min(1, Math.max(0, moveBeginEnd + horizontalDistance)));
-                }
+                if (moveBeginStart != null)
+                    dayStart.to(Math.min(dayEnd.getTarget() - 0.04167f, Math.max(0, moveBeginStart + horizontalDistance)));
+                else if (moveBeginEnd != null)
+                    dayEnd.to(Math.min(1, Math.max(dayStart.getTarget() + 0.04167f, moveBeginEnd + horizontalDistance)));
 
                 postInvalidate();
                 break;
