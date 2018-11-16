@@ -79,6 +79,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      */
     public void setSunriseColor(@ColorInt int color) {
         sunrisePaint.setColor(color);
+        postInvalidate();
     }
 
     /**
@@ -98,6 +99,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      */
     public void setSunsetColor(@ColorInt int color) {
         sunsetPaint.setColor(color);
+        postInvalidate();
     }
 
     /**
@@ -128,6 +130,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      */
     public void setFutureColor(@ColorInt int color) {
         linePaint.setColor(color);
+        postInvalidate();
     }
 
     /**
@@ -146,8 +149,8 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      *
      * @param dayStartMillis            The sunrise time, in milliseconds.
      */
-    public void setDayStart(long dayStartMillis) {
-        setDayStart(dayStartMillis, false);
+    public void setSunrise(long dayStartMillis) {
+        setSunrise(dayStartMillis, false);
     }
 
     /**
@@ -159,11 +162,12 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      * @param animate                   Whether to animate the change in
      *                                  values.
      */
-    public void setDayStart(long dayStartMillis, boolean animate) {
+    public void setSunrise(long dayStartMillis, boolean animate) {
         dayStartMillis %= DAY_LENGTH;
         if (animate)
             dayStart.to((float) dayStartMillis / DAY_LENGTH);
         else dayStart.setCurrent((float) dayStartMillis / DAY_LENGTH);
+        postInvalidate();
     }
 
     /**
@@ -172,7 +176,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      *
      * @return The sunrise time, in milliseconds.
      */
-    public long getDayStart() {
+    public long getSunrise() {
         return (long) (dayStart.getTarget() * DAY_LENGTH);
     }
 
@@ -183,8 +187,8 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      *
      * @param dayEndMillis              The sunset time, in milliseconds.
      */
-    public void setDayEnd(long dayEndMillis) {
-        setDayEnd(dayEndMillis, false);
+    public void setSunset(long dayEndMillis) {
+        setSunset(dayEndMillis, false);
     }
 
     /**
@@ -196,11 +200,12 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      * @param animate                   Whether to animate the change in
      *                                  values.
      */
-    public void setDayEnd(long dayEndMillis, boolean animate) {
+    public void setSunset(long dayEndMillis, boolean animate) {
         dayEndMillis %= DAY_LENGTH;
         if (animate)
             dayEnd.to((float) dayEndMillis / DAY_LENGTH);
         else dayEnd.setCurrent((float) dayEndMillis / DAY_LENGTH);
+        postInvalidate();
     }
 
     /**
@@ -209,15 +214,15 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      *
      * @return The sunset time, in milliseconds.
      */
-    public long getDayEnd() {
+    public long getSunset() {
         return (long) (dayEnd.getTarget() * DAY_LENGTH);
     }
 
     /**
      * Specify an interface to receive updates when the sunrise/sunset
      * times are modified by the user. Methods in this interface are only
-     * called when the view is interacted with; calling setDayEnd or
-     * setDayStart will not result in this interface being notified.
+     * called when the view is interacted with; calling setSunset or
+     * setSunrise will not result in this interface being notified.
      *
      * @param listener                  An interface to receive updates
      *                                  when the sunrise/sunset times
@@ -281,15 +286,22 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                 else if (moveBeginEnd != null)
                     dayEnd.to(Math.min(1, Math.max(dayStart.getTarget() + 0.04167f, moveBeginEnd + horizontalDistance)));
 
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(true);
+
                 postInvalidate();
                 break;
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 if (listener != null) {
                     if (moveBeginStart != null)
-                        listener.onSunriseChanged(this, getDayStart());
+                        listener.onSunriseChanged(this, getSunrise());
                     else if (moveBeginEnd != null)
-                        listener.onSunsetChanged(this, getDayEnd());
+                        listener.onSunsetChanged(this, getSunset());
                 }
+
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(false);
 
                 moveBeginStart = null;
                 moveBeginEnd = null;
