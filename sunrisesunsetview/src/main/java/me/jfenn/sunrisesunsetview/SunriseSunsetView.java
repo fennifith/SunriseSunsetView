@@ -18,7 +18,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
 
     private static final long DAY_LENGTH = 86400000L;
 
-    private Paint paint;
+    private Paint sunrisePaint;
     private Paint sunsetPaint;
     private Paint linePaint;
 
@@ -49,10 +49,10 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         dayStart = new AnimatedFloat(0.25f);
         dayEnd = new AnimatedFloat(0.75f);
 
-        paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.BLACK);
+        sunrisePaint = new Paint();
+        sunrisePaint.setAntiAlias(true);
+        sunrisePaint.setStyle(Paint.Style.FILL);
+        sunrisePaint.setColor(Color.BLACK);
 
         sunsetPaint = new Paint();
         sunsetPaint.setAntiAlias(true);
@@ -70,10 +70,26 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         setFocusable(true);
     }
 
+    /**
+     * Set the sunrise time, in milliseconds. Values can range
+     * beyond the period of a day; they are modulated by a 24 hour
+     * period. Change in values will not be animated.
+     *
+     * @param dayStartMillis            The sunrise time, in milliseconds.
+     */
     public void setDayStart(long dayStartMillis) {
         setDayStart(dayStartMillis, false);
     }
 
+    /**
+     * Set the sunrise time, in milliseconds. Values can range
+     * beyond the period of a day; they are modulated by a 24 hour
+     * period.
+     *
+     * @param dayStartMillis            The sunrise time, in milliseconds.
+     * @param animate                   Whether to animate the change in
+     *                                  values.
+     */
     public void setDayStart(long dayStartMillis, boolean animate) {
         dayStartMillis %= DAY_LENGTH;
         if (animate)
@@ -81,10 +97,26 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         else dayStart.setCurrent((float) dayStartMillis / DAY_LENGTH);
     }
 
+    /**
+     * Set the sunset time, in milliseconds. Values can range
+     * beyond the period of a day; they are modulated by a 24 hour
+     * period. Change in values will not be animated.
+     *
+     * @param dayEndMillis              The sunset time, in milliseconds.
+     */
     public void setDayEnd(long dayEndMillis) {
         setDayEnd(dayEndMillis, false);
     }
 
+    /**
+     * Set the sunset time, in milliseconds. Values can range
+     * beyond the period of a day; they are modulated by a 24 hour
+     * period.
+     *
+     * @param dayEndMillis              The sunset time, in milliseconds.
+     * @param animate                   Whether to animate the change in
+     *                                  values.
+     */
     public void setDayEnd(long dayEndMillis, boolean animate) {
         dayEndMillis %= DAY_LENGTH;
         if (animate)
@@ -92,6 +124,16 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         else dayEnd.setCurrent((float) dayEndMillis / DAY_LENGTH);
     }
 
+    /**
+     * Specify an interface to receive updates when the sunrise/sunset
+     * times are modified by the user. Methods in this interface are only
+     * called when the view is interacted with; calling setDayEnd or
+     * setDayStart will not result in this interface being notified.
+     *
+     * @param listener                  An interface to receive updates
+     *                                  when the sunrise/sunset times
+     *                                  are modified.
+     */
     public void setListener(SunriseListener listener) {
         this.listener = listener;
     }
@@ -121,7 +163,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
         path.rQuadTo(interval, -scaleY * ((interval / interval2 + 1) / 2), interval * 2, 0);
 
         canvas.clipPath(path);
-        canvas.drawRect(0, 0, (int) scaleX * hour, (int) scaleY, paint);
+        canvas.drawRect(0, 0, (int) scaleX * hour, (int) scaleY, sunrisePaint);
         canvas.drawRect(0, (int) scaleY, (int) scaleX * hour, canvas.getHeight(), sunsetPaint);
         canvas.drawRect((int) scaleX * hour, 0, canvas.getWidth(), canvas.getHeight(), linePaint);
 
