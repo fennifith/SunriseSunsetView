@@ -17,6 +17,10 @@ import me.jfenn.androidutils.anim.AnimatedFloat;
 
 public class SunriseSunsetView extends View implements View.OnTouchListener {
 
+    private static final float DAY_START = 0f;
+    private static final float DAY_END = 0.99998842592f;
+    private static final float TARGET_RANGE = 0.04167f;
+
     private static final long DAY_LENGTH = 86400000L;
 
     private Paint sunrisePaint;
@@ -282,9 +286,9 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (moveBeginStart != null)
-                    dayStart.to(Math.min(dayEnd.getTarget() - 0.04167f, Math.max(0, moveBeginStart + horizontalDistance)));
+                    dayStart.to(Math.min(dayEnd.getTarget() - TARGET_RANGE, Math.max(DAY_START, moveBeginStart + horizontalDistance)));
                 else if (moveBeginEnd != null)
-                    dayEnd.to(Math.min(1, Math.max(dayStart.getTarget() + 0.04167f, moveBeginEnd + horizontalDistance)));
+                    dayEnd.to(Math.min(DAY_END, Math.max(dayStart.getTarget() + TARGET_RANGE, moveBeginEnd + horizontalDistance)));
 
                 if (getParent() != null)
                     getParent().requestDisallowInterceptTouchEvent(true);
