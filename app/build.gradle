@@ -5,10 +5,10 @@ android {
 
     defaultConfig {
         applicationId "me.jfenn.sunrisesunsetviewsample"
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 1
-        versionName "0.0.1"
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+        versionCode project.versionCode
+        versionName project.versionName
     }
 
     buildTypes {
