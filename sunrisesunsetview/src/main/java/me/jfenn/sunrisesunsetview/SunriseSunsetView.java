@@ -19,7 +19,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
 
     private static final float DAY_START = 0f;
     private static final float DAY_END = 0.99998842592f;
-    private static final float TARGET_RANGE = 0.04167f;
+    private static final float DAY_HOUR = 0.04167f;
 
     private static final long DAY_LENGTH = 86400000L;
 
@@ -32,6 +32,7 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
 
     private Float moveBeginStart;
     private Float moveBeginEnd;
+    private float min = DAY_HOUR, max = DAY_END;
 
     private SunriseListener listener;
 
@@ -155,6 +156,18 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
      */
     public void setSunrise(long dayStartMillis) {
         setSunrise(dayStartMillis, false);
+    }
+
+    /**
+     * Set the minimum and maximum distance allowed between sunrise
+     * and sunset.
+     *
+     * @param minMinutes                The minimum distance, in minutes.
+     * @param maxMinutes                The maximum distance, in minutes.
+     */
+    public void setMinMax(int minMinutes, int maxMinutes) {
+        min = (float) minMinutes / 1440;
+        max = (float) maxMinutes / 1440;
     }
 
     /**
@@ -286,9 +299,11 @@ public class SunriseSunsetView extends View implements View.OnTouchListener {
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (moveBeginStart != null)
-                    dayStart.to(Math.min(dayEnd.getTarget() - TARGET_RANGE, Math.max(DAY_START, moveBeginStart + horizontalDistance)));
+                    dayStart.to(Math.min(Math.min(dayEnd.getTarget() - DAY_HOUR, dayEnd.getTarget() - min),
+                            Math.max(Math.max(DAY_START, dayEnd.getTarget() - max), moveBeginStart + horizontalDistance)));
                 else if (moveBeginEnd != null)
-                    dayEnd.to(Math.min(DAY_END, Math.max(dayStart.getTarget() + TARGET_RANGE, moveBeginEnd + horizontalDistance)));
+                    dayEnd.to(Math.min(Math.min(DAY_END, dayStart.getTarget() + max), Math.max(dayStart.getTarget() + DAY_HOUR,
+                            Math.max(moveBeginEnd + horizontalDistance, dayStart.getTarget() + min))));
 
                 if (getParent() != null)
                     getParent().requestDisallowInterceptTouchEvent(true);
